@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Червоні прапорці — Інтерактивний мікро-квест</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-base: #0a0e14;
+      --bg-card: #121822;
+      --bg-elevated: #192230;
+      --bg-hover: #202c3d;
+      --border: #253244;
+      --border-strong: #33455e;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #f97316;
+      --accent-hover: #ea580c;
+      --accent-soft: rgba(249, 115, 22, 0.14);
+      --accent-border: rgba(249, 115, 22, 0.45);
+      --success: #22c55e;
+      --success-soft: rgba(34, 197, 94, 0.14);
+      --success-border: rgba(34, 197, 94, 0.5);
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.14);
+      --danger-border: rgba(239, 68, 68, 0.5);
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(249, 115, 22, 0.08), transparent 40%),
+        radial-gradient(circle at 85% 90%, rgba(249, 115, 22, 0.06), transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top tactical bar */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+
+    .brand-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    .org-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    /* Screens */
+    .screen {
+      display: none;
+      animation: fadeSlide 0.28s ease-out;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-title {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 6vw, 32px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .hero-title span {
+      color: var(--accent);
+    }
+
+    .hero-subtitle {
+      margin: 0 0 18px;
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    .meta-pills {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .meta-pill {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .meta-pill-val {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .meta-pill-lbl {
+      display: block;
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Form controls */
+    .form-section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin: 0 0 12px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: "▾";
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent);
+      pointer-events: none;
+      font-size: 16px;
+    }
+
+    select.tactical-select {
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 13px 38px 13px 14px;
+      font-size: 15px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    select.tactical-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .role-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      font-size: 14px;
+      color: var(--text-primary);
+      text-align: left;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .role-option:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-hover);
+    }
+
+    .role-option.selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .role-radio {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .role-option.selected .role-radio {
+      border-color: var(--accent);
+    }
+
+    .role-option.selected .role-radio::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .anon-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(148, 163, 184, 0.06);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 13px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin: 16px 0 20px;
+    }
+
+    .error-msg {
+      display: none;
+      color: #fca5a5;
+      background: var(--danger-soft);
+      border: 1px solid var(--danger-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+
+    .error-msg.visible {
+      display: block;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      padding: 15px 20px;
+      border: none;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(249, 115, 22, 0.3);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 13px 18px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent);
+    }
+
+    /* Quiz Header & Progress */
+    .quiz-progress-wrap {
+      margin-bottom: 14px;
+    }
+
+    .quiz-progress-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .case-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .score-live {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-secondary);
+      font-size: 12px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 7px;
+      background: var(--bg-elevated);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #fb923c);
+      border-radius: 999px;
+      transition: width 0.35s ease;
+    }
+
+    /* Case Content */
+    .case-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .case-title {
+      margin: 0 0 14px;
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--text-primary);
+    }
+
+    .situation-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius-sm);
+      padding: 14px 15px;
+      margin-bottom: 18px;
+    }
+
+    .situation-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .situation-text {
+      margin: 0;
+      font-size: 14.5px;
+      color: #e2e8f0;
+    }
+
+    .question-text {
+      margin: 0 0 14px;
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Options */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      text-align: left;
+      padding: 14px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 14.5px;
+      line-height: 1.45;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--bg-hover);
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+
+    .option-letter {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    .option-btn.correct {
+      background: var(--success-soft);
+      border-color: var(--success-border);
+    }
+
+    .option-btn.correct .option-letter {
+      background: var(--success);
+      border-color: var(--success);
+      color: #052e16;
+    }
+
+    .option-btn.wrong {
+      background: var(--danger-soft);
+      border-color: var(--danger-border);
+    }
+
+    .option-btn.wrong .option-letter {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #ffffff;
+    }
+
+    .option-btn.dimmed {
+      opacity: 0.45;
+    }
+
+    /* Feedback panel */
+    .feedback-box {
+      display: none;
+      margin-top: 18px;
+      padding: 15px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      animation: fadeSlide 0.25s ease-out;
+    }
+
+    .feedback-box.visible {
+      display: block;
+    }
+
+    .feedback-box.is-correct {
+      background: var(--success-soft);
+      border-color: var(--success-border);
+    }
+
+    .feedback-box.is-wrong {
+      background: var(--danger-soft);
+      border-color: var(--danger-border);
+    }
+
+    .feedback-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 14.5px;
+      margin-bottom: 6px;
+    }
+
+    .feedback-box.is-correct .feedback-header {
+      color: #4ade80;
+    }
+
+    .feedback-box.is-wrong .feedback-header {
+      color: #f87171;
+    }
+
+    .feedback-text {
+      margin: 0;
+      font-size: 14px;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+
+    .next-btn-wrap {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .next-btn-wrap.visible {
+      display: block;
+    }
+
+    /* Result screen */
+    .result-hero {
+      text-align: center;
+      padding: 10px 0 18px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+
+    .score-ring {
+      width: 118px;
+      height: 118px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, var(--bg-card) 58%, transparent 59%),
+                  conic-gradient(var(--accent) var(--pct, 0%), var(--bg-elevated) 0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 28px rgba(249, 115, 22, 0.2);
+    }
+
+    .score-big {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--text-primary);
+    }
+
+    .score-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .result-rank {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .result-title {
+      margin: 0 0 6px;
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .result-desc {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .sync-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .sync-status.ok {
+      background: var(--success-soft);
+      border-color: var(--success-border);
+      color: #86efac;
+    }
+
+    .sync-status.demo {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: #fdba74;
+    }
+
+    .summary-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .summary-item {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 13px;
+    }
+
+    .summary-item-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+
+    .badge-ok {
+      color: #4ade80;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .badge-err {
+      color: #f87171;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .summary-tip {
+      margin: 8px 0 0;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .footer-note {
+      margin-top: auto;
+      padding-top: 22px;
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 420px) {
+      .card { padding: 18px 15px; }
+      .meta-pills { gap: 6px; }
+      .meta-pill { padding: 8px 5px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="brand-tag">
+        <span class="brand-dot"></span>
+        16 днів проти насильства
+      </div>
+      <div class="org-label">ГУНП в Черкаській області</div>
+    </header>
+
+    <!-- ЕКРАН 1: СТАРТ + БЛОК 0 -->
+    <section id="screen-start" class="screen active">
+      <div class="card">
+        <h1 class="hero-title"><span>Червоні</span> прапорці</h1>
+        <p class="hero-subtitle">
+          Практичний мікро-квест для особового складу: розпізнавання прихованих форм домашнього насильства, оцінка ризиків та застосування ТЗП.
+        </p>
+
+        <div class="meta-pills">
+          <div class="meta-pill">
+            <span class="meta-pill-val">8 кейсів</span>
+            <span class="meta-pill-lbl">зі служби</span>
+          </div>
+          <div class="meta-pill">
+            <span class="meta-pill-val">3–4 хв</span>
+            <span class="meta-pill-lbl">проходження</span>
+          </div>
+          <div class="meta-pill">
+            <span class="meta-pill-val">Анонімно</span>
+            <span class="meta-pill-lbl">без ПІБ</span>
+          </div>
+        </div>
+
+        <p class="form-section-title">Крок 1 • Ідентифікація підрозділу</p>
+
+        <div class="form-group">
+          <label class="form-label" for="unit-select">1. Оберіть ваш підрозділ</label>
+          <div class="select-wrap">
+            <select id="unit-select" class="tactical-select">
+              <option value="" disabled selected>— Оберіть зі списку —</option>
+              <option value="Працівники Головного управління">Працівники Головного управління</option>
+              <option value="Черкаське РУП (та підпорядковані підрозділи)">Черкаське РУП (та підпорядковані підрозділи)</option>
+              <option value="Уманське РУП (та підпорядковані підрозділи)">Уманське РУП (та підпорядковані підрозділи)</option>
+              <option value="Золотоніський РВП (та підпорядковані підрозділи)">Золотоніський РВП (та підпорядковані підрозділи)</option>
+              <option value="Звенигородський РВП (та підпорядковані підрозділи)">Звенигородський РВП (та підпорядковані підрозділи)</option>
+              <option value="Інший структурний підрозділ ГУНП">Інший структурний підрозділ ГУНП</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">2. Категорія посади</label>
+          <div class="role-grid" id="role-grid">
+            <button type="button" class="role-option" data-role="ГРПП / патрульна поліція / СПДН">
+              <span class="role-radio"></span>
+              <span>ГРПП / патрульна поліція / сектор протидії домашньому насильству (СПДН)</span>
+            </button>
+            <button type="button" class="role-option" data-role="ДОП / ювенальна превенція">
+              <span class="role-radio"></span>
+              <span>ДОП / ювенальна превенція</span>
+            </button>
+            <button type="button" class="role-option" data-role="Слідство / дізнання">
+              <span class="role-radio"></span>
+              <span>Слідство / дізнання</span>
+            </button>
+            <button type="button" class="role-option" data-role="Інші служби (УГІ, чергова частина, адмінблок тощо)">
+              <span class="role-radio"></span>
+              <span>Інші служби (УГІ, чергова частина, адмінблок тощо)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="anon-note">
+          <span>🔒</span>
+          <span>Тестування повністю анонімне. Дані про підрозділ та категорію посади використовуються виключно для узагальненої статистики охоплення.</span>
+        </div>
+
+        <div id="start-error" class="error-msg">Будь ласка, оберіть підрозділ та категорію посади перед початком.</div>
+
+        <button type="button" id="btn-start" class="btn-primary">РОЗПОЧАТИ МІКРО-КВЕСТ →</button>
+      </div>
+    </section>
+
+    <!-- ЕКРАН 2: КЕЙСИ -->
+    <section id="screen-quiz" class="screen">
+      <div class="quiz-progress-wrap">
+        <div class="quiz-progress-top">
+          <span class="case-counter" id="case-counter">КЕЙС 1 / 8</span>
+          <span class="score-live" id="score-live">Правильних: 0</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="case-tag" id="case-tag"></div>
+        <h2 class="case-title" id="case-title"></h2>
+
+        <div class="situation-box">
+          <div class="situation-label">Ситуація</div>
+          <p class="situation-text" id="case-situation"></p>
+        </div>
+
+        <p class="question-text" id="case-question"></p>
+
+        <div class="options-list" id="options-list"></div>
+
+        <div class="feedback-box" id="feedback-box">
+          <div class="feedback-header" id="feedback-header"></div>
+          <p class="feedback-text" id="feedback-text"></p>
+        </div>
+
+        <div class="next-btn-wrap" id="next-btn-wrap">
+          <button type="button" id="btn-next" class="btn-primary">НАСТУПНИЙ КЕЙС →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ЕКРАН 3: РЕЗУЛЬТАТИ -->
+    <section id="screen-result" class="screen">
+      <div class="card">
+        <div class="result-hero">
+          <div class="score-ring" id="score-ring">
+            <span class="score-big" id="result-score">0/8</span>
+            <span class="score-sub" id="result-percent">0%</span>
+          </div>
+          <div class="result-rank" id="result-rank"></div>
+          <h2 class="result-title">Мікро-квест завершено!</h2>
+          <p class="result-desc" id="result-desc"></p>
+        </div>
+
+        <div class="sync-status" id="sync-status">
+          <span>⏳</span>
+          <span>Збереження результату до статистики...</span>
+        </div>
+
+        <p class="form-section-title">Розбір проходження</p>
+        <div class="summary-list" id="summary-list"></div>
+
+        <button type="button" id="btn-restart" class="btn-secondary">Пройти мікро-квест ще раз</button>
+      </div>
+    </section>
+
+    <footer class="footer-note">
+      Інтерактивний навчальний модуль • Акція «16 днів проти насильства»
+    </footer>
+  </div>
+
+  <script>
+    // =========================================================================
+    // НАЛАШТУВАННЯ: Вставте сюди посилання з Google Apps Script (між лапками)
+    // Приклад: const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycb.../exec";
+    // =========================================================================
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrW7ijLEq974LZKUBodI77SXnWJnmMt-wk-JofQURIixbim5zeFmOHcaPh48BITyW0/exec";
+
+    const CASES = [
+      {
+        id: 1,
+        tag: "Психологічне насильство vs Побутовий конфлікт",
+        title: "«Ми просто голосно сперечалися»",
+        situation:
+          "Виклик на 102. Дружина налякана, руки тремтять, на кухні розбита тарілка. Чоловік абсолютно спокійний, усміхається, каже патрульним: «Хлопці, вибачте, у нас просто емоційна сварка через ремонт, я її пальцем не чіпав, самі бачите — синців немає». Дружина мовчки дивиться в підлогу і шепоче: «Та все нормально, ми самі розберемося».",
+        question: "Які «червоні прапорці» вказують, що це не просто сварка, а ймовірне домашнє насильство?",
+        options: [
+          { letter: "А", text: "Жодних, бо немає тілесних ушкоджень, а заявниця відмовляється від претензій." },
+          { letter: "Б", text: "Лише розбита тарілка, тому треба скласти протокол за дрібне хуліганство." },
+          { letter: "В", text: "Контраст між демонстративним спокоєм кривдника та заляканістю жінки, пошкодження майна як спосіб залякування, різка зміна позиції постраждалої в присутності чоловіка." }
+        ],
+        correctIndex: 2,
+        explanation:
+          "Типова маніпуляція кривдника — здаватися «адекватним» на фоні наляканої жертви. Опитування постраждалої має проводитися окремо, поза зоною чутності та видимості кривдника. Відсутність синців не виключає психологічного насильства (ст. 173-2 КУпАП)."
+      },
+      {
+        id: 2,
+        tag: "Економічне насильство",
+        title: "«Це мої гроші, я заробляю»",
+        situation:
+          "Жінка в декретній відпустці з двома дітьми. Чоловік забирає її банківську картку з дитячими виплатами, видає готівку лише під чеки за продукти, а на прохання купити дитині зимове взуття відповідає: «Підеш на роботу — будеш командувати».",
+        question: "Чи є в діях чоловіка склад адміністративного правопорушення?",
+        options: [
+          { letter: "А", text: "Так, це економічне насильство — умисне позбавлення коштів чи документів, на які постраждала особа має законне право." },
+          { letter: "Б", text: "Ні, розподіл бюджету в сім'ї — це внутрішня справа подружжя, поліція не втручається." },
+          { letter: "В", text: "Це цивільно-правові відносини, треба одразу направляти в суд на аліменти без фіксації виклику." }
+        ],
+        correctIndex: 0,
+        explanation:
+          "Згідно із ЗУ «Про запобігання та протидію домашньому насильству», позбавлення коштів, якими особа має право розпоряджатися (зокрема соціальних виплат), є прямим проявом економічного насильства."
+      },
+      {
+        id: 3,
+        tag: "Терміновий заборонний припис (ТЗП)",
+        title: "ТЗП без згоди постраждалої",
+        situation:
+          "Нічний виклик. П'яний співмешканець погрожує жінці фізичною розправою, намагається вибити двері в кімнату, де вона зачинилася з дитиною. Оцінка ризиків показує високий рівень небезпеки. Але жінка благає: «Не виганяйте його на вулицю, йому ніде ночувати, завтра протверезіє і вибачиться».",
+        question: "Чи має право поліцейський винести ТЗП у цій ситуації?",
+        options: [
+          { letter: "А", text: "Ні, ТЗП виноситься виключно за письмовою заявою постраждалої особи." },
+          { letter: "Б", text: "Так, за власною ініціативою працівника поліції за результатами оцінки ризиків, оскільки існує безпосередня загроза життю чи здоров'ю." },
+          { letter: "В", text: "ТЗП може винести лише суд протягом 24 годин." }
+        ],
+        correctIndex: 1,
+        explanation:
+          "Ст. 25 ЗУ «Про запобігання та протидію домашньому насильству» надає поліцейському право винести ТЗП строком до 10 діб за власною ініціативою навіть без заяви постраждалої, якщо оцінка ризиків вказує на реальну загрозу."
+      },
+      {
+        id: 4,
+        tag: "Дитина як свідок насильства",
+        title: "«Він же дитину не чіпав!»",
+        situation:
+          "Батько в присутності 7-річного сина принижує, штовхає та ображає матір нецензурною лайкою. Фізичної сили до хлопчика не застосовував.",
+        question: "Який статус має дитина у цій ситуації згідно із законодавством?",
+        options: [
+          { letter: "А", text: "Просто свідок події, опитується в присутності обох батьків." },
+          { letter: "Б", text: "Дитина не має жодного процесуального статусу, якщо їй не завдано тілесних ушкоджень." },
+          { letter: "В", text: "Постраждала особа (дитина, яка стала свідком/очевидцем домашнього насильства), про що обов'язково інформується Служба у справах дітей." }
+        ],
+        correctIndex: 2,
+        explanation:
+          "Дитина, яка стала свідком (очевидцем) домашнього насильства, за законом визнається постраждалою особою і зазнає психологічної травми."
+      },
+      {
+        id: 5,
+        tag: "Травмоінформований підхід",
+        title: "Чоловік-військовий або ветеран як кривдник / постраждалий",
+        situation:
+          "Виклик на конфлікт у родині, де чоловік нещодавно повернувся з бойових дій, має ПТСР, агресивно реагує на гучні звуки, зламав телефон дружини, але фізично її не бив.",
+        question: "Який алгоритм дій поліцейського є найбільш коректним?",
+        options: [
+          { letter: "А", text: "Зафіксувати факт правопорушення згідно із законом, провести оцінку ризиків, але комунікувати спокійно, без провокацій, та надати контакти спеціалізованої ветеранської психологічної підтримки." },
+          { letter: "Б", text: "Не реагувати офіційно через повагу до статусу учасника бойових дій, обмежитися усною бесідою." },
+          { letter: "В", text: "Одразу застосувати кайданки для профілактики, незалежно від поведінки під час прибуття наряду." }
+        ],
+        correctIndex: 0,
+        explanation:
+          "Закон єдиний для всіх, проте комунікація потребує знання травмоінформованого підходу: чіткі, спокійні інструкції без різких рухів знижують рівень агресії та забезпечують безпеку всіх учасників."
+      },
+      {
+        id: 6,
+        tag: "Подвійний виклик • Визначення первинного агресора",
+        title: "«Це все вона сама вигадала, щоб забрати квартиру»",
+        situation:
+          "Прибувши на виклик, поліцейські бачать, що чоловік сам подзвонив на 102 на хвилину раніше за дружину і стверджує, що це вона на нього напала. У чоловіка — поверхнева подряпина на тильній стороні долоні, у жінки — синці на передпліччях та почервоніння на шиї.",
+        question: "На що звернути увагу при визначенні первинного агресора?",
+        options: [
+          { letter: "А", text: "Хто перший зателефонував на 102, той і є потерпілим." },
+          { letter: "Б", text: "На характер та локалізацію ушкоджень (захисні сліди на передпліччях у жінки vs сліди від удару/спроби вирватися на кисті у чоловіка) та попередню історію звернень." },
+          { letter: "В", text: "Скласти два протоколи на обох за взаємну бійку, не розбираючись у причинах." }
+        ],
+        correctIndex: 1,
+        explanation:
+          "Кривдники часто використовують «зустрічні заяви» як інструмент тиску. Важливо відрізняти самозахист від нападу."
+      },
+      {
+        id: 7,
+        tag: "Цифрове насильство та переслідування",
+        title: "Сталкінг та кібершантаж",
+        situation:
+          "Колишній партнер після розриву стосунків щодня надсилає жінці по 50 повідомлень із погрозами, відстежує її геолокацію через прихований додаток у телефоні та погрожує розіслати її приватні фото колегам по роботі.",
+        question: "Чи підпадають такі дії під поняття домашнього / гендерно зумовленого насильства?",
+        options: [
+          { letter: "А", text: "Так, дія закону поширюється і на колишнє подружжя/партнерів, а кіберпереслідування та шантаж є формою психологічного насильства." },
+          { letter: "Б", text: "Ні, вони вже не проживають разом і не перебувають у шлюбі." },
+          { letter: "В", text: "Ні, в інтернеті це не вважається правопорушенням." }
+        ],
+        correctIndex: 0,
+        explanation:
+          "Насильство в цифровому просторі (кіберсталкінг, шантаж інтимними фото) не менш небезпечне за фізичне і часто передує реальному нападу."
+      },
+      {
+        id: 8,
+        tag: "Безбар'єрність (до 3 грудня — Дня людей з інвалідністю)",
+        title: "Комунікація з постраждалою особою з порушенням слуху",
+        situation:
+          "По допомогу звернулася жінка з порушенням слуху, яка зазнала домашнього насильства від родичів, з якими проживає.",
+        question: "Як забезпечити її право на захист?",
+        options: [
+          { letter: "А", text: "Попросити її родичів перекласти, що саме сталося." },
+          { letter: "Б", text: "Відкласти розгляд до моменту, поки вона не прийде з кимось із знайомих." },
+          { letter: "В", text: "Залучити перекладача жестової мови (зокрема через сервіси УТОГ або онлайн-переклад) та забезпечити письмову/візуальну комунікацію без участі потенційних кривдників." }
+        ],
+        correctIndex: 2,
+        explanation:
+          "Ніколи не залучайте як перекладачів членів родини чи осіб, які можуть бути причетні до насильства або тиску на постраждалу особу."
+      }
+    ];
+
+    // State
+    let selectedUnit = "";
+    let selectedRole = "";
+    let currentIndex = 0;
+    let score = 0;
+    let userAnswers = []; // array of booleans
+    let startedAt = null;
+
+    // Elements
+    const screenStart = document.getElementById("screen-start");
+    const screenQuiz = document.getElementById("screen-quiz");
+    const screenResult = document.getElementById("screen-result");
+
+    const unitSelect = document.getElementById("unit-select");
+    const roleOptions = document.querySelectorAll(".role-option");
+    const startError = document.getElementById("start-error");
+    const btnStart = document.getElementById("btn-start");
+
+    const caseCounter = document.getElementById("case-counter");
+    const scoreLive = document.getElementById("score-live");
+    const progressFill = document.getElementById("progress-fill");
+    const caseTag = document.getElementById("case-tag");
+    const caseTitle = document.getElementById("case-title");
+    const caseSituation = document.getElementById("case-situation");
+    const caseQuestion = document.getElementById("case-question");
+    const optionsList = document.getElementById("options-list");
+    const feedbackBox = document.getElementById("feedback-box");
+    const feedbackHeader = document.getElementById("feedback-header");
+    const feedbackText = document.getElementById("feedback-text");
+    const nextBtnWrap = document.getElementById("next-btn-wrap");
+    const btnNext = document.getElementById("btn-next");
+
+    const scoreRing = document.getElementById("score-ring");
+    const resultScore = document.getElementById("result-score");
+    const resultPercent = document.getElementById("result-percent");
+    const resultRank = document.getElementById("result-rank");
+    const resultDesc = document.getElementById("result-desc");
+    const syncStatus = document.getElementById("sync-status");
+    const summaryList = document.getElementById("summary-list");
+    const btnRestart = document.getElementById("btn-restart");
+
+    // Role selection
+    roleOptions.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        roleOptions.forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedRole = btn.dataset.role;
+        startError.classList.remove("visible");
+      });
+    });
+
+    unitSelect.addEventListener("change", () => {
+      selectedUnit = unitSelect.value;
+      startError.classList.remove("visible");
+    });
+
+    function showScreen(target) {
+      [screenStart, screenQuiz, screenResult].forEach((s) => s.classList.remove("active"));
+      target.classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    btnStart.addEventListener("click", () => {
+      selectedUnit = unitSelect.value;
+      if (!selectedUnit || !selectedRole) {
+        startError.classList.add("visible");
+        return;
+      }
+      currentIndex = 0;
+      score = 0;
+      userAnswers = [];
+      startedAt = Date.now();
+      showScreen(screenQuiz);
+      renderCase();
+    });
+
+    const OPTION_LETTERS = ["А", "Б", "В"];
+    let currentCorrectIdx = 0;
+
+    function shuffleArray(arr) {
+      const copy = arr.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function renderCase() {
+      const item = CASES[currentIndex];
+      const total = CASES.length;
+
+      caseCounter.textContent = `КЕЙС ${currentIndex + 1} / ${total}`;
+      scoreLive.textContent = `Правильних: ${score}`;
+      progressFill.style.width = `${((currentIndex) / total) * 100}%`;
+
+      caseTag.textContent = item.tag;
+      caseTitle.textContent = item.title;
+      caseSituation.textContent = item.situation;
+      caseQuestion.textContent = item.question;
+
+      feedbackBox.className = "feedback-box";
+      nextBtnWrap.classList.remove("visible");
+      optionsList.innerHTML = "";
+
+      // Перемішуємо варіанти відповідей випадковим чином для кожного учасника
+      const shuffled = shuffleArray(
+        item.options.map((opt, origIdx) => ({
+          text: opt.text,
+          isCorrect: origIdx === item.correctIndex
+        }))
+      );
+      currentCorrectIdx = shuffled.findIndex((o) => o.isCorrect);
+
+      shuffled.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "option-btn";
+        btn.innerHTML = `
+          <span class="option-letter">${OPTION_LETTERS[idx]}</span>
+          <span>${opt.text}</span>
+        `;
+        btn.addEventListener("click", () => handleAnswer(idx));
+        optionsList.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(chosenIdx) {
+      const item = CASES[currentIndex];
+      const isCorrect = chosenIdx === currentCorrectIdx;
+      if (isCorrect) score++;
+      userAnswers.push(isCorrect);
+
+      const buttons = optionsList.querySelectorAll(".option-btn");
+      buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === currentCorrectIdx) {
+          btn.classList.add("correct");
+        } else if (idx === chosenIdx && !isCorrect) {
+          btn.classList.add("wrong");
+        } else {
+          btn.classList.add("dimmed");
+        }
+      });
+
+      scoreLive.textContent = `Правильних: ${score}`;
+      progressFill.style.width = `${((currentIndex + 1) / CASES.length) * 100}%`;
+
+      feedbackBox.classList.add("visible", isCorrect ? "is-correct" : "is-wrong");
+      feedbackHeader.textContent = isCorrect
+        ? "✓ Правильно! «Червоний прапорець» розпізнано"
+        : "✕ Зверніть увагу на правильний алгоритм";
+      feedbackText.textContent = item.explanation;
+
+      btnNext.textContent =
+        currentIndex === CASES.length - 1
+          ? "ЗАВЕРШИТИ ТА ПОБАЧИТИ РЕЗУЛЬТАТ →"
+          : "НАСТУПНИЙ КЕЙС →";
+      nextBtnWrap.classList.add("visible");
+
+      setTimeout(() => {
+        feedbackBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 80);
+    }
+
+    btnNext.addEventListener("click", () => {
+      if (currentIndex < CASES.length - 1) {
+        currentIndex++;
+        renderCase();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        finishQuest();
+      }
+    });
+
+    function finishQuest() {
+      const total = CASES.length;
+      const percent = Math.round((score / total) * 100);
+      const durationSec = startedAt ? Math.max(1, Math.round((Date.now() - startedAt) / 1000)) : 0;
+
+      scoreRing.style.setProperty("--pct", `${percent}%`);
+      resultScore.textContent = `${score}/${total}`;
+      resultPercent.textContent = `${percent}%`;
+
+      if (score === total) {
+        resultRank.textContent = "ЕКСПЕРТНИЙ РІВЕНЬ";
+        resultDesc.textContent =
+          "Відмінний результат! Ви впевнено розпізнаєте приховані форми насильства та знаєте коректний алгоритм реагування.";
+      } else if (score >= 6) {
+        resultRank.textContent = "ВИСОКИЙ РІВЕНЬ";
+        resultDesc.textContent =
+          "Хороша підготовка. Перегляньте нижче пояснення до окремих кейсів, щоб закріпити всі нюанси.";
+      } else if (score >= 4) {
+        resultRank.textContent = "БАЗОВИЙ РІВЕНЬ";
+        resultDesc.textContent =
+          "Є хороша основа, але окремі ситуації потребують додаткової уваги. Ознайомтеся з розбором нижче.";
+      } else {
+        resultRank.textContent = "ПОТРЕБУЄ ПОВТОРЕННЯ";
+        resultDesc.textContent =
+          "Рекомендуємо уважно переглянути правові пояснення до кожного кейсу та за бажанням пройти мікро-квест повторно.";
+      }
+
+      summaryList.innerHTML = "";
+      CASES.forEach((item, idx) => {
+        const ok = userAnswers[idx];
+        const div = document.createElement("div");
+        div.className = "summary-item";
+        div.innerHTML = `
+          <div class="summary-item-head">
+            <span>${idx + 1}. ${item.title}</span>
+            <span class="${ok ? "badge-ok" : "badge-err"}">${ok ? "✓ ВІРНО" : "✕ ПОМИЛКА"}</span>
+          </div>
+          ${!ok ? `<p class="summary-tip">${item.explanation}</p>` : ""}
+        `;
+        summaryList.appendChild(div);
+      });
+
+      showScreen(screenResult);
+      sendResultsToGoogleSheets({
+        timestamp: new Date().toISOString(),
+        unit: selectedUnit,
+        role: selectedRole,
+        score,
+        total,
+        percent,
+        durationSec,
+        answers: userAnswers
+      });
+    }
+
+    async function sendResultsToGoogleSheets(payload) {
+      if (!GOOGLE_SCRIPT_URL || !GOOGLE_SCRIPT_URL.trim().startsWith("https://")) {
+        syncStatus.className = "sync-status demo";
+        syncStatus.innerHTML =
+          "<span>ℹ️</span><span>Тестовий режим: Google Таблиця ще не підключена (див. ІНСТРУКЦІЯ.md)</span>";
+        return;
+      }
+
+      syncStatus.className = "sync-status";
+      syncStatus.innerHTML = "<span>⏳</span><span>Збереження результату до статистики...</span>";
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL.trim(), {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+        syncStatus.className = "sync-status ok";
+        syncStatus.innerHTML =
+          "<span>✓</span><span>Результат анонімно зафіксовано для статистики підрозділу</span>";
+      } catch (err) {
+        syncStatus.className = "sync-status demo";
+        syncStatus.innerHTML =
+          "<span>⚠️</span><span>Не вдалося з'єднатися із сервером (перевірте інтернет)</span>";
+      }
+    }
+
+    btnRestart.addEventListener("click", () => {
+      showScreen(screenStart);
+    });
+  </script>
+</body>
+</html>
+

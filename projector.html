@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR-код для проектора — Мікро-квест «Червоні прапорці»</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-base: #0a0e14;
+      --bg-card: #121822;
+      --bg-elevated: #192230;
+      --border: #253244;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent: #f97316;
+      --accent-soft: rgba(249, 115, 22, 0.14);
+      --accent-border: rgba(249, 115, 22, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.12), transparent 42%),
+        radial-gradient(circle at 80% 80%, rgba(249, 115, 22, 0.08), transparent 42%),
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
+    }
+
+    .slide {
+      width: 100%;
+      height: 100vh;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: clamp(24px, 4vw, 56px);
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: center;
+      gap: clamp(28px, 5vw, 72px);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(12px, 1.2vw, 15px);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      padding: 8px 16px;
+      border-radius: 8px;
+      margin-bottom: 22px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+    }
+
+    .title {
+      margin: 0 0 14px;
+      font-size: clamp(40px, 5.2vw, 74px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+    }
+
+    .title span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      margin: 0 0 32px;
+      font-size: clamp(18px, 1.8vw, 24px);
+      color: var(--text-secondary);
+      line-height: 1.45;
+      max-width: 600px;
+    }
+
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 34px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: clamp(16px, 1.45vw, 21px);
+      font-weight: 600;
+      color: #e2e8f0;
+      background: rgba(18, 24, 34, 0.85);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      padding: 13px 18px;
+      border-radius: 12px;
+      max-width: 560px;
+    }
+
+    .cta-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: clamp(16px, 1.5vw, 22px);
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Right QR column */
+    .qr-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-frame {
+      position: relative;
+      padding: 24px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 40px rgba(249, 115, 22, 0.18);
+    }
+
+    /* Tactical corners */
+    .qr-frame::before,
+    .qr-frame::after {
+      content: "";
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      border-color: var(--accent);
+      border-style: solid;
+      pointer-events: none;
+    }
+
+    .qr-frame::before {
+      top: -10px;
+      left: -10px;
+      border-width: 5px 0 0 5px;
+      border-top-left-radius: 14px;
+    }
+
+    .qr-frame::after {
+      bottom: -10px;
+      right: -10px;
+      border-width: 0 5px 5px 0;
+      border-bottom-right-radius: 14px;
+    }
+
+    #qr-image {
+      display: block;
+      width: clamp(240px, 28vw, 390px);
+      height: clamp(240px, 28vw, 390px);
+      image-rendering: pixelated;
+    }
+
+    .qr-caption {
+      margin-top: 20px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(12px, 1.1vw, 15px);
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 999px;
+      max-width: 100%;
+      word-break: break-all;
+    }
+
+    /* Subtle presenter controls */
+    .controls {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+      opacity: 0.35;
+      transition: opacity 0.2s;
+    }
+
+    .controls:hover {
+      opacity: 1;
+    }
+
+    .ctrl-btn {
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .ctrl-btn:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+
+    /* Modal for custom URL */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 500px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+    }
+
+    .modal h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .modal p {
+      margin: 0 0 14px;
+      font-size: 13.5px;
+      color: var(--text-secondary);
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-save {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .slide {
+        grid-template-columns: 1fr;
+        height: auto;
+        text-align: center;
+      }
+      .feature-item { margin: 0 auto; text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <main class="slide">
+    <div>
+      <div class="badge">
+        <span class="dot"></span>
+        Акція «16 днів проти насильства» • ГУНП в Черкаській області
+      </div>
+
+      <h1 class="title"><span>Червоні</span> прапорці</h1>
+      <p class="subtitle">
+        Короткий інтерактивний мікро-квест для особового складу: розпізнавання прихованих форм домашнього насильства та алгоритм реагування.
+      </p>
+
+      <div class="features">
+        <div class="feature-item">⏱ 3–4 хвилини прямо зі смартфона</div>
+        <div class="feature-item">📋 8 реальних практичних кейсів із миттєвим розбором</div>
+        <div class="feature-item">🔒 Повністю анонімно (вказується лише підрозділ)</div>
+      </div>
+
+      <div class="cta-hint">
+        📱 Наведіть камеру смартфона на QR-код праворуч →
+      </div>
+    </div>
+
+    <div class="qr-panel">
+      <div class="qr-frame">
+        <img id="qr-image" alt="QR-код для переходу до мікро-квесту" />
+      </div>
+      <div class="qr-caption" id="qr-url-label"></div>
+    </div>
+  </main>
+
+  <div class="controls">
+    <button type="button" class="ctrl-btn" id="btn-edit-url">⚙ Змінити посилання</button>
+    <button type="button" class="ctrl-btn" id="btn-fullscreen">⛶ На весь екран</button>
+  </div>
+
+  <div class="modal-backdrop" id="modal">
+    <div class="modal">
+      <h3>Посилання для QR-коду</h3>
+      <p>Вставте посилання на ваш опублікований тест (наприклад, з Netlify). Якщо відкриваєте цей слайд вже з сайту Netlify, посилання підхопиться автоматично.</p>
+      <input type="url" id="url-input" placeholder="https://vash-sayt.netlify.app/" />
+      <div class="modal-actions">
+        <button type="button" class="ctrl-btn" id="btn-cancel">Скасувати</button>
+        <button type="button" class="btn-save" id="btn-save">Оновити QR-код</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // За бажанням можна вписати постійне посилання сюди (між лапками).
+    // Якщо залишити порожнім — слайд автоматично візьме адресу сайту, на якому відкритий.
+    const DEFAULT_QUEST_URL = "";
+
+    const qrImage = document.getElementById("qr-image");
+    const qrUrlLabel = document.getElementById("qr-url-label");
+    const modal = document.getElementById("modal");
+    const urlInput = document.getElementById("url-input");
+
+    function detectQuestUrl() {
+      const saved = localStorage.getItem("red_flags_quest_url");
+      if (saved) return saved;
+      if (DEFAULT_QUEST_URL) return DEFAULT_QUEST_URL;
+
+      if (window.location.protocol.startsWith("http")) {
+        return window.location.href.replace(/projector\.html.*$/i, "");
+      }
+      return "https://vash-sayt.netlify.app/";
+    }
+
+    function renderQR(url) {
+      const cleanUrl = url.trim();
+      const qrApi =
+        "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=2&ecc=M&data=" +
+        encodeURIComponent(cleanUrl);
+      qrImage.src = qrApi;
+      qrUrlLabel.textContent = cleanUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      urlInput.value = cleanUrl;
+    }
+
+    renderQR(detectQuestUrl());
+
+    document.getElementById("btn-fullscreen").addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    document.getElementById("btn-edit-url").addEventListener("click", () => {
+      modal.classList.add("open");
+      urlInput.focus();
+    });
+
+    document.getElementById("btn-cancel").addEventListener("click", () => {
+      modal.classList.remove("open");
+    });
+
+    document.getElementById("btn-save").addEventListener("click", () => {
+      const val = urlInput.value.trim();
+      if (val) {
+        localStorage.setItem("red_flags_quest_url", val);
+        renderQR(val);
+      }
+      modal.classList.remove("open");
+    });
+  </script>
+</body>
+</html>
+
